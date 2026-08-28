@@ -1,14 +1,13 @@
 import os
 import shutil
 import tkinter as tk
-from tkinter import messagebox
 
 
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
 
     if not temp_folder or not os.path.exists(temp_folder):
-        messagebox.showerror("Error", "Temp folder was not found.")
+        result_label.config(text="Temp folder was not found.")
         return
 
     deleted_files = 0
@@ -29,11 +28,12 @@ def clean_temp():
         except (PermissionError, OSError):
             continue
 
-    messagebox.showinfo(
-        "PC Cleaner",
-        f"Cleanup completed!\n\n"
-        f"Files removed: {deleted_files}\n"
-        f"Folders removed: {deleted_folders}"
+    result_label.config(
+        text=(
+            "Cleanup completed!\n\n"
+            f"Files removed: {deleted_files}\n"
+            f"Folders removed: {deleted_folders}"
+        )
     )
 
 
@@ -57,5 +57,13 @@ clean_button = tk.Button(
 )
 
 clean_button.pack(pady=20)
+
+result_label = tk.Label(
+    root,
+    text="Ready to clean.",
+    font=("Segoe UI", 12)
+)
+
+result_label.pack(pady=20)
 
 root.mainloop()
