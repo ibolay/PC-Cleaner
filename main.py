@@ -2,6 +2,11 @@ import os
 import shutil
 import tkinter as tk
 
+def open_temp_folder():
+    temp_folder = os.environ.get("TEMP")
+
+    if temp_folder and os.path.exists(temp_folder):
+        os.startfile(temp_folder)
 
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
@@ -57,6 +62,15 @@ clean_button = tk.Button(
 )
 
 clean_button.pack(pady=20)
+
+open_button = tk.Button(
+    root,
+    text="Open Temp Folder",
+    font=("Segoe UI", 12),
+    command=open_temp_folder
+)
+
+open_button.pack(pady=10)
 
 result_label = tk.Label(
     root,
