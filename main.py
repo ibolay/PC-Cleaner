@@ -2,11 +2,17 @@ import os
 import shutil
 import tkinter as tk
 
+
+# -----------------------------
+# Functions
+# -----------------------------
+
 def open_temp_folder():
     temp_folder = os.environ.get("TEMP")
 
     if temp_folder and os.path.exists(temp_folder):
         os.startfile(temp_folder)
+
 
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
@@ -35,49 +41,243 @@ def clean_temp():
 
     result_label.config(
         text=(
-            "Cleanup completed!\n\n"
-            f"Files removed: {deleted_files}\n"
+            f"Cleanup completed!\n"
+            f"Files removed: {deleted_files}   "
             f"Folders removed: {deleted_folders}"
         )
     )
 
 
+# -----------------------------
+# Main Window
+# -----------------------------
+
 root = tk.Tk()
 root.title("PC Cleaner")
-root.geometry("800x600")
+root.geometry("900x650")
+root.minsize(800, 550)
+root.configure(bg="#f4f6f8")
 
-title = tk.Label(
+
+# -----------------------------
+# Header
+# -----------------------------
+
+header = tk.Frame(
     root,
-    text="PC Cleaner",
-    font=("Segoe UI", 24, "bold")
+    bg="#ffffff",
+    height=100
 )
 
-title.pack(pady=30)
+header.pack(fill="x")
+header.pack_propagate(False)
+
+
+title = tk.Label(
+    header,
+    text="PC Cleaner",
+    font=("Segoe UI", 28, "bold"),
+    bg="#ffffff",
+    fg="#1f2937"
+)
+
+title.pack(pady=(18, 0))
+
+
+subtitle = tk.Label(
+    header,
+    text="Clean unnecessary files and keep your PC fresh",
+    font=("Segoe UI", 11),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+subtitle.pack()
+
+
+# -----------------------------
+# Main Content
+# -----------------------------
+
+content = tk.Frame(
+    root,
+    bg="#f4f6f8"
+)
+
+content.pack(
+    fill="both",
+    expand=True,
+    padx=35,
+    pady=30
+)
+
+
+# -----------------------------
+# Temp Cleaner Card
+# -----------------------------
+
+temp_card = tk.Frame(
+    content,
+    bg="#ffffff",
+    bd=0,
+    highlightthickness=1,
+    highlightbackground="#e5e7eb"
+)
+
+temp_card.pack(
+    fill="x",
+    pady=10
+)
+
+
+temp_title = tk.Label(
+    temp_card,
+    text="Temporary Files",
+    font=("Segoe UI", 17, "bold"),
+    bg="#ffffff",
+    fg="#111827"
+)
+
+temp_title.pack(
+    anchor="w",
+    padx=25,
+    pady=(22, 5)
+)
+
+
+temp_description = tk.Label(
+    temp_card,
+    text="Remove unnecessary temporary files from your Windows user folder.",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+temp_description.pack(
+    anchor="w",
+    padx=25
+)
+
+
+# -----------------------------
+# Buttons
+# -----------------------------
+
+button_frame = tk.Frame(
+    temp_card,
+    bg="#ffffff"
+)
+
+button_frame.pack(
+    anchor="w",
+    padx=25,
+    pady=20
+)
+
 
 clean_button = tk.Button(
-    root,
+    button_frame,
     text="Clean Temp Files",
-    font=("Segoe UI", 12, "bold"),
+    font=("Segoe UI", 11, "bold"),
+    bg="#2563eb",
+    fg="#ffffff",
+    activebackground="#1d4ed8",
+    activeforeground="#ffffff",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
     command=clean_temp
 )
 
-clean_button.pack(pady=20)
+clean_button.pack(
+    side="left",
+    padx=(0, 10)
+)
+
 
 open_button = tk.Button(
-    root,
-    text="Open Temp Folder",
-    font=("Segoe UI", 12),
+    button_frame,
+    text="Open Folder",
+    font=("Segoe UI", 11),
+    bg="#e5e7eb",
+    fg="#374151",
+    activebackground="#d1d5db",
+    activeforeground="#111827",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
     command=open_temp_folder
 )
 
-open_button.pack(pady=10)
-
-result_label = tk.Label(
-    root,
-    text="Ready to clean.",
-    font=("Segoe UI", 12)
+open_button.pack(
+    side="left"
 )
 
-result_label.pack(pady=20)
+
+# -----------------------------
+# Status
+# -----------------------------
+
+status_frame = tk.Frame(
+    content,
+    bg="#ffffff",
+    highlightthickness=1,
+    highlightbackground="#e5e7eb"
+)
+
+status_frame.pack(
+    fill="x",
+    pady=(20, 10)
+)
+
+
+status_title = tk.Label(
+    status_frame,
+    text="Status",
+    font=("Segoe UI", 13, "bold"),
+    bg="#ffffff",
+    fg="#111827"
+)
+
+status_title.pack(
+    anchor="w",
+    padx=25,
+    pady=(18, 5)
+)
+
+
+result_label = tk.Label(
+    status_frame,
+    text="Ready to clean.",
+    font=("Segoe UI", 11),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+result_label.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 18)
+)
+
+
+# -----------------------------
+# Footer
+# -----------------------------
+
+footer = tk.Label(
+    root,
+    text="PC Cleaner • Windows Utility",
+    font=("Segoe UI", 9),
+    bg="#f4f6f8",
+    fg="#9ca3af"
+)
+
+footer.pack(
+    pady=(0, 15)
+)
+
 
 root.mainloop()
