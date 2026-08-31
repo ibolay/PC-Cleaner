@@ -13,6 +13,36 @@ def open_temp_folder():
     if temp_folder and os.path.exists(temp_folder):
         os.startfile(temp_folder)
 
+def get_temp_size():
+    temp_folder = os.environ.get("TEMP")
+
+    if not temp_folder or not os.path.exists(temp_folder):
+        return 0
+
+    total_size = 0
+
+    for root_dir, dirs, files in os.walk(temp_folder):
+        for file in files:
+            file_path = os.path.join(root_dir, file)
+
+            try:
+                total_size += os.path.getsize(file_path)
+            except (PermissionError, OSError):
+                continue
+
+    return total_size
+
+def format_size(size):
+    if size < 1024:
+        return f"{size} B"
+
+    if size < 1024 ** 2:
+        return f"{size / 1024:.1f} KB"
+
+    if size < 1024 ** 3:
+        return f"{size / (1024 ** 2):.1f} MB"
+
+    return f"{size / (1024 ** 3):.2f} GB"
 
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
@@ -153,6 +183,20 @@ temp_description = tk.Label(
     fg="#6b7280"
 )
 
+size_label = tk.Label(
+    temp_card,
+    text="Calculating...",
+    font=("Segoe UI", 10, "bold"),
+    bg="#ffffff",
+    fg="#2563eb"
+)
+
+size_label.pack(
+    anchor="w",
+    padx=25,
+    pady=(8, 0)
+)
+
 temp_description.pack(
     anchor="w",
     padx=25
@@ -279,5 +323,13 @@ footer.pack(
     pady=(0, 15)
 )
 
+def update_temp_size():
+    size = get_temp_size()
+    size_label.config(
+        text=f"Potential space to free: {format_size(size)}"
+    )
+
+
+update_temp_size()
 
 root.mainloop()
