@@ -44,6 +44,10 @@ def format_size(size):
 
     return f"{size / (1024 ** 3):.2f} GB"
 
+def clean_all():
+    clean_temp()
+    update_temp_size()
+
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
 
@@ -306,6 +310,24 @@ result_label.pack(
     pady=(0, 18)
 )
 
+clean_all_button = tk.Button(
+    content,
+    text="CLEAN ALL",
+    font=("Segoe UI", 12, "bold"),
+    bg="#111827",
+    fg="#ffffff",
+    activebackground="#1f2937",
+    activeforeground="#ffffff",
+    relief="flat",
+    padx=30,
+    pady=12,
+    cursor="hand2",
+    command=clean_all
+)
+
+clean_all_button.pack(
+    pady=20
+)
 
 # -----------------------------
 # Footer
