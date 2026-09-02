@@ -46,7 +46,68 @@ def format_size(size):
 
 def clean_all():
     clean_temp()
+    clean_windows_cache()
     update_temp_size()
+
+def get_windows_cache_folder():
+    local_app_data = os.environ.get("LOCALAPPDATA")
+
+    if not local_app_data:
+        return None
+
+    return os.path.join(local_app_data, "Microsoft", "Windows", "INetCache")
+
+
+def get_folder_size(folder):
+    if not folder or not os.path.exists(folder):
+        return 0
+
+    total_size = 0
+
+    for root_dir, dirs, files in os.walk(folder):
+        for file in files:
+            file_path = os.path.join(root_dir, file)
+
+            try:
+                total_size += os.path.getsize(file_path)
+            except (PermissionError, OSError):
+                continue
+
+    return total_size
+
+
+def clean_windows_cache():
+    cache_folder = get_windows_cache_folder()
+
+    if not cache_folder or not os.path.exists(cache_folder):
+        windows_cache_result.config(text="Windows cache folder was not found.")
+        return
+
+    deleted_files = 0
+    deleted_folders = 0
+
+    for item in os.listdir(cache_folder):
+        path = os.path.join(cache_folder, item)
+
+        try:
+            if os.path.isfile(path) or os.path.islink(path):
+                os.remove(path)
+                deleted_files += 1
+
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
+                deleted_folders += 1
+
+        except (PermissionError, OSError):
+            continue
+
+    windows_cache_result.config(
+        text=(
+            f"Cleanup completed!\n"
+            f"Files removed: {deleted_files}   "
+            f"Folders removed: {deleted_folders}"
+        )
+    )
 
 def clean_temp():
     temp_folder = os.environ.get("TEMP")
@@ -267,6 +328,84 @@ open_button.pack(
 # -----------------------------
 # Status
 # -----------------------------
+
+windows_cache_card = tk.Frame(
+    content,
+    bg="#ffffff",
+    highlightthickness=1,
+    highlightbackground="#e5e7eb"
+)
+
+windows_cache_card.pack(
+    fill="x",
+    pady=10
+)
+
+
+windows_cache_title = tk.Label(
+    windows_cache_card,
+    text="Windows Cache",
+    font=("Segoe UI", 17, "bold"),
+    bg="#ffffff",
+    fg="#111827"
+)
+
+windows_cache_title.pack(
+    anchor="w",
+    padx=25,
+    pady=(22, 5)
+)
+
+
+windows_cache_description = tk.Label(
+    windows_cache_card,
+    text="Remove cached Windows internet files.",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+windows_cache_description.pack(
+    anchor="w",
+    padx=25
+)
+
+
+windows_cache_button = tk.Button(
+    windows_cache_card,
+    text="Clean Windows Cache",
+    font=("Segoe UI", 11, "bold"),
+    bg="#2563eb",
+    fg="#ffffff",
+    activebackground="#1d4ed8",
+    activeforeground="#ffffff",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
+    command=clean_windows_cache
+)
+
+windows_cache_button.pack(
+    anchor="w",
+    padx=25,
+    pady=(15, 10)
+)
+
+
+windows_cache_result = tk.Label(
+    windows_cache_card,
+    text="Ready to clean.",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+windows_cache_result.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 18)
+)
 
 status_frame = tk.Frame(
     content,
