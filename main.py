@@ -47,6 +47,7 @@ def format_size(size):
 def clean_all():
     clean_temp()
     clean_windows_cache()
+    clean_browser_cache()
     update_temp_size()
 
 def get_windows_cache_folder():
@@ -102,6 +103,66 @@ def clean_windows_cache():
             continue
 
     windows_cache_result.config(
+        text=(
+            f"Cleanup completed!\n"
+            f"Files removed: {deleted_files}   "
+            f"Folders removed: {deleted_folders}"
+        )
+    )
+
+def get_browser_cache_paths():
+    local_app_data = os.environ.get("LOCALAPPDATA")
+
+    if not local_app_data:
+        return {}
+
+    return {
+        "Chrome": os.path.join(
+            local_app_data,
+            "Google",
+            "Chrome",
+            "User Data",
+            "Default",
+            "Cache"
+        ),
+        "Edge": os.path.join(
+            local_app_data,
+            "Microsoft",
+            "Edge",
+            "User Data",
+            "Default",
+            "Cache"
+        )
+    }
+
+
+def clean_browser_cache():
+    browser_paths = get_browser_cache_paths()
+
+    deleted_files = 0
+    deleted_folders = 0
+
+    for browser, cache_folder in browser_paths.items():
+
+        if not os.path.exists(cache_folder):
+            continue
+
+        for item in os.listdir(cache_folder):
+            path = os.path.join(cache_folder, item)
+
+            try:
+                if os.path.isfile(path) or os.path.islink(path):
+                    os.remove(path)
+                    deleted_files += 1
+
+                elif os.path.isdir(path):
+                    shutil.rmtree(path)
+                    deleted_folders += 1
+
+            except (PermissionError, OSError):
+                continue
+
+    browser_cache_result.config(
         text=(
             f"Cleanup completed!\n"
             f"Files removed: {deleted_files}   "
@@ -402,6 +463,84 @@ windows_cache_result = tk.Label(
 )
 
 windows_cache_result.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 18)
+)
+
+browser_cache_card = tk.Frame(
+    content,
+    bg="#ffffff",
+    highlightthickness=1,
+    highlightbackground="#e5e7eb"
+)
+
+browser_cache_card.pack(
+    fill="x",
+    pady=10
+)
+
+
+browser_cache_title = tk.Label(
+    browser_cache_card,
+    text="Browser Cache",
+    font=("Segoe UI", 17, "bold"),
+    bg="#ffffff",
+    fg="#111827"
+)
+
+browser_cache_title.pack(
+    anchor="w",
+    padx=25,
+    pady=(22, 5)
+)
+
+
+browser_cache_description = tk.Label(
+    browser_cache_card,
+    text="Clean cached files from Chrome and Microsoft Edge.",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+browser_cache_description.pack(
+    anchor="w",
+    padx=25
+)
+
+
+browser_cache_button = tk.Button(
+    browser_cache_card,
+    text="Clean Browser Cache",
+    font=("Segoe UI", 11, "bold"),
+    bg="#2563eb",
+    fg="#ffffff",
+    activebackground="#1d4ed8",
+    activeforeground="#ffffff",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
+    command=clean_browser_cache
+)
+
+browser_cache_button.pack(
+    anchor="w",
+    padx=25,
+    pady=(15, 10)
+)
+
+
+browser_cache_result = tk.Label(
+    browser_cache_card,
+    text="Ready to clean.",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+browser_cache_result.pack(
     anchor="w",
     padx=25,
     pady=(0, 18)
