@@ -267,6 +267,18 @@ content.pack(
     pady=30
 )
 
+locations_label = tk.Label(
+    content,
+    text="3 Cleanup Locations",
+    font=("Segoe UI", 11, "bold"),
+    bg="#f4f6f8",
+    fg="#6b7280"
+)
+
+locations_label.pack(
+    anchor="w",
+    pady=(0, 5)
+)
 
 # -----------------------------
 # Temp Cleaner Card
