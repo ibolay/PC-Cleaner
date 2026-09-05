@@ -267,9 +267,15 @@ content.pack(
     pady=30
 )
 
+cleanup_locations = [
+    "Temporary Files",
+    "Windows Cache",
+    "Browser Cache"
+]
+
 locations_label = tk.Label(
     content,
-    text="3 Cleanup Locations",
+    text=f"{len(cleanup_locations)} Cleanup Locations",
     font=("Segoe UI", 11, "bold"),
     bg="#f4f6f8",
     fg="#6b7280"
