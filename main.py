@@ -3,15 +3,56 @@ import shutil
 import tkinter as tk
 
 
-# -----------------------------
-# Functions
-# -----------------------------
+# =========================
+# TEMPORARY FILES
+# =========================
 
 def open_temp_folder():
     temp_folder = os.environ.get("TEMP")
 
     if temp_folder and os.path.exists(temp_folder):
         os.startfile(temp_folder)
+
+
+def clean_temp():
+    temp_folder = os.environ.get("TEMP")
+
+    if not temp_folder or not os.path.exists(temp_folder):
+        result_label.config(text="Temporary folder was not found.")
+        return
+
+    deleted_files = 0
+    deleted_folders = 0
+
+    for item in os.listdir(temp_folder):
+        path = os.path.join(temp_folder, item)
+
+        try:
+            if os.path.isfile(path) or os.path.islink(path):
+                os.remove(path)
+                deleted_files += 1
+
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
+                deleted_folders += 1
+
+        except (PermissionError, OSError):
+            continue
+
+    result_label.config(
+        text=(
+            f"Cleanup completed!\n"
+            f"Files removed: {deleted_files}   "
+            f"Folders removed: {deleted_folders}"
+        )
+    )
+
+    update_temp_size()
+
+
+# =========================
+# SIZE CALCULATION
+# =========================
 
 def get_temp_size():
     temp_folder = os.environ.get("TEMP")
@@ -21,16 +62,17 @@ def get_temp_size():
 
     total_size = 0
 
-    for root_dir, dirs, files in os.walk(temp_folder):
+    for root, dirs, files in os.walk(temp_folder):
         for file in files:
-            file_path = os.path.join(root_dir, file)
+            path = os.path.join(root, file)
 
             try:
-                total_size += os.path.getsize(file_path)
+                total_size += os.path.getsize(path)
             except (PermissionError, OSError):
                 continue
 
     return total_size
+
 
 def format_size(size):
     if size < 1024:
@@ -44,11 +86,18 @@ def format_size(size):
 
     return f"{size / (1024 ** 3):.2f} GB"
 
-def clean_all():
-    clean_temp()
-    clean_windows_cache()
-    clean_browser_cache()
-    update_temp_size()
+
+def update_temp_size():
+    size = get_temp_size()
+
+    size_label.config(
+        text=f"Potential space to free: {format_size(size)}"
+    )
+
+
+# =========================
+# WINDOWS CACHE
+# =========================
 
 def get_windows_cache_folder():
     local_app_data = os.environ.get("LOCALAPPDATA")
@@ -56,32 +105,28 @@ def get_windows_cache_folder():
     if not local_app_data:
         return None
 
-    return os.path.join(local_app_data, "Microsoft", "Windows", "INetCache")
+    return os.path.join(
+        local_app_data,
+        "Microsoft",
+        "Windows",
+        "INetCache"
+    )
 
 
-def get_folder_size(folder):
-    if not folder or not os.path.exists(folder):
-        return 0
+def open_windows_cache_folder():
+    cache_folder = get_windows_cache_folder()
 
-    total_size = 0
-
-    for root_dir, dirs, files in os.walk(folder):
-        for file in files:
-            file_path = os.path.join(root_dir, file)
-
-            try:
-                total_size += os.path.getsize(file_path)
-            except (PermissionError, OSError):
-                continue
-
-    return total_size
+    if cache_folder and os.path.exists(cache_folder):
+        os.startfile(cache_folder)
 
 
 def clean_windows_cache():
     cache_folder = get_windows_cache_folder()
 
     if not cache_folder or not os.path.exists(cache_folder):
-        windows_cache_result.config(text="Windows cache folder was not found.")
+        windows_cache_result.config(
+            text="Windows cache folder was not found."
+        )
         return
 
     deleted_files = 0
@@ -110,6 +155,11 @@ def clean_windows_cache():
         )
     )
 
+
+# =========================
+# BROWSER CACHE
+# =========================
+
 def get_browser_cache_paths():
     local_app_data = os.environ.get("LOCALAPPDATA")
 
@@ -125,6 +175,7 @@ def get_browser_cache_paths():
             "Default",
             "Cache"
         ),
+
         "Edge": os.path.join(
             local_app_data,
             "Microsoft",
@@ -170,77 +221,64 @@ def clean_browser_cache():
         )
     )
 
-def clean_temp():
-    temp_folder = os.environ.get("TEMP")
 
-    if not temp_folder or not os.path.exists(temp_folder):
-        result_label.config(text="Temp folder was not found.")
-        return
+# =========================
+# CLEAN ALL
+# =========================
 
-    deleted_files = 0
-    deleted_folders = 0
+def clean_all():
+    clean_temp()
+    clean_windows_cache()
+    clean_browser_cache()
+    update_temp_size()
 
-    for item in os.listdir(temp_folder):
-        path = os.path.join(temp_folder, item)
-
-        try:
-            if os.path.isfile(path) or os.path.islink(path):
-                os.remove(path)
-                deleted_files += 1
-
-            elif os.path.isdir(path):
-                shutil.rmtree(path)
-                deleted_folders += 1
-
-        except (PermissionError, OSError):
-            continue
-
-    result_label.config(
-        text=(
-            f"Cleanup completed!\n"
-            f"Files removed: {deleted_files}   "
-            f"Folders removed: {deleted_folders}"
-        )
+    status_label.config(
+        text="All cleanup locations processed."
     )
 
 
-# -----------------------------
-# Main Window
-# -----------------------------
+# =========================
+# MAIN WINDOW
+# =========================
 
 root = tk.Tk()
+
 root.title("PC Cleaner")
 root.geometry("900x650")
 root.minsize(800, 550)
 root.configure(bg="#f4f6f8")
 
 
-# -----------------------------
-# Header
-# -----------------------------
+# =========================
+# HEADER
+# =========================
 
 header = tk.Frame(
     root,
-    bg="#ffffff",
-    height=100
+    bg="#ffffff"
 )
 
-header.pack(fill="x")
-header.pack_propagate(False)
+header.pack(
+    fill="x"
+)
 
 
-title = tk.Label(
+title_label = tk.Label(
     header,
     text="PC Cleaner",
-    font=("Segoe UI", 28, "bold"),
+    font=("Segoe UI", 24, "bold"),
     bg="#ffffff",
-    fg="#1f2937"
+    fg="#111827"
 )
 
-title.pack(pady=(18, 0))
+title_label.pack(
+    anchor="w",
+    padx=30,
+    pady=(25, 2)
+)
 
 
-subtitle = tk.Label(
+subtitle_label = tk.Label(
     header,
     text="Clean unnecessary files and keep your PC fresh",
     font=("Segoe UI", 11),
@@ -248,12 +286,16 @@ subtitle = tk.Label(
     fg="#6b7280"
 )
 
-subtitle.pack()
+subtitle_label.pack(
+    anchor="w",
+    padx=30,
+    pady=(0, 20)
+)
 
 
-# -----------------------------
-# Main Content
-# -----------------------------
+# =========================
+# CONTENT
+# =========================
 
 content = tk.Frame(
     root,
@@ -263,9 +305,14 @@ content = tk.Frame(
 content.pack(
     fill="both",
     expand=True,
-    padx=35,
-    pady=30
+    padx=25,
+    pady=20
 )
+
+
+# =========================
+# CLEANUP LOCATIONS
+# =========================
 
 cleanup_locations = [
     "Temporary Files",
@@ -286,28 +333,26 @@ locations_label.pack(
     pady=(0, 5)
 )
 
-# -----------------------------
-# Temp Cleaner Card
-# -----------------------------
+
+# =========================
+# TEMP CARD
+# =========================
 
 temp_card = tk.Frame(
     content,
-    bg="#ffffff",
-    bd=0,
-    highlightthickness=1,
-    highlightbackground="#e5e7eb"
+    bg="#ffffff"
 )
 
 temp_card.pack(
     fill="x",
-    pady=10
+    pady=(0, 12)
 )
 
 
 temp_title = tk.Label(
     temp_card,
     text="Temporary Files",
-    font=("Segoe UI", 17, "bold"),
+    font=("Segoe UI", 15, "bold"),
     bg="#ffffff",
     fg="#111827"
 )
@@ -315,7 +360,7 @@ temp_title = tk.Label(
 temp_title.pack(
     anchor="w",
     padx=25,
-    pady=(22, 5)
+    pady=(20, 3)
 )
 
 
@@ -327,9 +372,15 @@ temp_description = tk.Label(
     fg="#6b7280"
 )
 
+temp_description.pack(
+    anchor="w",
+    padx=25
+)
+
+
 size_label = tk.Label(
     temp_card,
-    text="Calculating...",
+    text="Potential space to free: Calculating...",
     font=("Segoe UI", 10, "bold"),
     bg="#ffffff",
     fg="#2563eb"
@@ -338,33 +389,24 @@ size_label = tk.Label(
 size_label.pack(
     anchor="w",
     padx=25,
-    pady=(8, 0)
-)
-
-temp_description.pack(
-    anchor="w",
-    padx=25
+    pady=(10, 0)
 )
 
 
-# -----------------------------
-# Buttons
-# -----------------------------
-
-button_frame = tk.Frame(
+temp_buttons = tk.Frame(
     temp_card,
     bg="#ffffff"
 )
 
-button_frame.pack(
+temp_buttons.pack(
     anchor="w",
     padx=25,
-    pady=20
+    pady=(15, 10)
 )
 
 
-clean_button = tk.Button(
-    button_frame,
+clean_temp_button = tk.Button(
+    temp_buttons,
     text="Clean Temp Files",
     font=("Segoe UI", 11, "bold"),
     bg="#2563eb",
@@ -378,14 +420,14 @@ clean_button = tk.Button(
     command=clean_temp
 )
 
-clean_button.pack(
+clean_temp_button.pack(
     side="left",
     padx=(0, 10)
 )
 
 
-open_button = tk.Button(
-    button_frame,
+open_temp_button = tk.Button(
+    temp_buttons,
     text="Open Folder",
     font=("Segoe UI", 11),
     bg="#e5e7eb",
@@ -399,32 +441,46 @@ open_button = tk.Button(
     command=open_temp_folder
 )
 
-open_button.pack(
+open_temp_button.pack(
     side="left"
 )
 
 
-# -----------------------------
-# Status
-# -----------------------------
+result_label = tk.Label(
+    temp_card,
+    text="",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#374151",
+    justify="left"
+)
+
+result_label.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 20)
+)
+
+
+# =========================
+# WINDOWS CACHE CARD
+# =========================
 
 windows_cache_card = tk.Frame(
     content,
-    bg="#ffffff",
-    highlightthickness=1,
-    highlightbackground="#e5e7eb"
+    bg="#ffffff"
 )
 
 windows_cache_card.pack(
     fill="x",
-    pady=10
+    pady=(0, 12)
 )
 
 
 windows_cache_title = tk.Label(
     windows_cache_card,
     text="Windows Cache",
-    font=("Segoe UI", 17, "bold"),
+    font=("Segoe UI", 15, "bold"),
     bg="#ffffff",
     fg="#111827"
 )
@@ -432,7 +488,7 @@ windows_cache_title = tk.Label(
 windows_cache_title.pack(
     anchor="w",
     padx=25,
-    pady=(22, 5)
+    pady=(20, 3)
 )
 
 
@@ -450,8 +506,20 @@ windows_cache_description.pack(
 )
 
 
-windows_cache_button = tk.Button(
+windows_cache_buttons = tk.Frame(
     windows_cache_card,
+    bg="#ffffff"
+)
+
+windows_cache_buttons.pack(
+    anchor="w",
+    padx=25,
+    pady=(15, 10)
+)
+
+
+windows_cache_button = tk.Button(
+    windows_cache_buttons,
     text="Clean Windows Cache",
     font=("Segoe UI", 11, "bold"),
     bg="#2563eb",
@@ -466,43 +534,66 @@ windows_cache_button = tk.Button(
 )
 
 windows_cache_button.pack(
-    anchor="w",
-    padx=25,
-    pady=(15, 10)
+    side="left",
+    padx=(0, 10)
+)
+
+
+windows_cache_open_button = tk.Button(
+    windows_cache_buttons,
+    text="Open Folder",
+    font=("Segoe UI", 11),
+    bg="#e5e7eb",
+    fg="#374151",
+    activebackground="#d1d5db",
+    activeforeground="#111827",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
+    command=open_windows_cache_folder
+)
+
+windows_cache_open_button.pack(
+    side="left"
 )
 
 
 windows_cache_result = tk.Label(
     windows_cache_card,
-    text="Ready to clean.",
+    text="",
     font=("Segoe UI", 10),
     bg="#ffffff",
-    fg="#6b7280"
+    fg="#374151",
+    justify="left"
 )
 
 windows_cache_result.pack(
     anchor="w",
     padx=25,
-    pady=(0, 18)
+    pady=(0, 20)
 )
+
+
+# =========================
+# BROWSER CACHE CARD
+# =========================
 
 browser_cache_card = tk.Frame(
     content,
-    bg="#ffffff",
-    highlightthickness=1,
-    highlightbackground="#e5e7eb"
+    bg="#ffffff"
 )
 
 browser_cache_card.pack(
     fill="x",
-    pady=10
+    pady=(0, 12)
 )
 
 
 browser_cache_title = tk.Label(
     browser_cache_card,
     text="Browser Cache",
-    font=("Segoe UI", 17, "bold"),
+    font=("Segoe UI", 15, "bold"),
     bg="#ffffff",
     fg="#111827"
 )
@@ -510,7 +601,7 @@ browser_cache_title = tk.Label(
 browser_cache_title.pack(
     anchor="w",
     padx=25,
-    pady=(22, 5)
+    pady=(20, 3)
 )
 
 
@@ -552,59 +643,53 @@ browser_cache_button.pack(
 
 browser_cache_result = tk.Label(
     browser_cache_card,
+    text="",
+    font=("Segoe UI", 10),
+    bg="#ffffff",
+    fg="#374151",
+    justify="left"
+)
+
+browser_cache_result.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 20)
+)
+
+
+# =========================
+# STATUS
+# =========================
+
+status_card = tk.Frame(
+    content,
+    bg="#ffffff"
+)
+
+status_card.pack(
+    fill="x",
+    pady=(0, 12)
+)
+
+
+status_label = tk.Label(
+    status_card,
     text="Ready to clean.",
     font=("Segoe UI", 10),
     bg="#ffffff",
     fg="#6b7280"
 )
 
-browser_cache_result.pack(
+status_label.pack(
     anchor="w",
     padx=25,
-    pady=(0, 18)
-)
-
-status_frame = tk.Frame(
-    content,
-    bg="#ffffff",
-    highlightthickness=1,
-    highlightbackground="#e5e7eb"
-)
-
-status_frame.pack(
-    fill="x",
-    pady=(20, 10)
+    pady=15
 )
 
 
-status_title = tk.Label(
-    status_frame,
-    text="Status",
-    font=("Segoe UI", 13, "bold"),
-    bg="#ffffff",
-    fg="#111827"
-)
-
-status_title.pack(
-    anchor="w",
-    padx=25,
-    pady=(18, 5)
-)
-
-
-result_label = tk.Label(
-    status_frame,
-    text="Ready to clean.",
-    font=("Segoe UI", 11),
-    bg="#ffffff",
-    fg="#6b7280"
-)
-
-result_label.pack(
-    anchor="w",
-    padx=25,
-    pady=(0, 18)
-)
+# =========================
+# CLEAN ALL BUTTON
+# =========================
 
 clean_all_button = tk.Button(
     content,
@@ -622,12 +707,13 @@ clean_all_button = tk.Button(
 )
 
 clean_all_button.pack(
-    pady=20
+    pady=(5, 15)
 )
 
-# -----------------------------
-# Footer
-# -----------------------------
+
+# =========================
+# FOOTER
+# =========================
 
 footer = tk.Label(
     root,
@@ -638,15 +724,13 @@ footer = tk.Label(
 )
 
 footer.pack(
-    pady=(0, 15)
+    pady=(0, 10)
 )
 
-def update_temp_size():
-    size = get_temp_size()
-    size_label.config(
-        text=f"Potential space to free: {format_size(size)}"
-    )
 
+# =========================
+# START
+# =========================
 
 update_temp_size()
 
