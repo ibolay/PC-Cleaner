@@ -183,6 +183,13 @@ def get_browser_cache_paths():
             "User Data",
             "Default",
             "Cache"
+        ),
+
+        "Firefox": os.path.join(
+            local_app_data,
+            "Mozilla",
+            "Firefox",
+            "Profiles"
         )
     }
 
@@ -686,6 +693,28 @@ status_label.pack(
     pady=15
 )
 
+# =========================
+# REFRESH BUTTON
+# =========================
+
+refresh_button = tk.Button(
+    content,
+    text="Refresh",
+    font=("Segoe UI", 10, "bold"),
+    bg="#e5e7eb",
+    fg="#374151",
+    activebackground="#d1d5db",
+    activeforeground="#111827",
+    relief="flat",
+    padx=20,
+    pady=8,
+    cursor="hand2",
+    command=update_temp_size
+)
+
+refresh_button.pack(
+    pady=(0, 10)
+)
 
 # =========================
 # CLEAN ALL BUTTON
