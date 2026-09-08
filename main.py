@@ -233,14 +233,72 @@ def clean_browser_cache():
 # CLEAN ALL
 # =========================
 
+def get_folder_size(folder):
+    total_size = 0
+
+    if not folder or not os.path.exists(folder):
+        return 0
+
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            path = os.path.join(root, file)
+
+            try:
+                total_size += os.path.getsize(path)
+            except (PermissionError, OSError):
+                continue
+
+    return total_size
+
+
 def clean_all():
+    temp_size_before = get_folder_size(os.environ.get("TEMP"))
+
+    windows_cache_folder = get_windows_cache_folder()
+    windows_cache_size_before = get_folder_size(windows_cache_folder)
+
+    browser_sizes_before = 0
+
+    for browser, cache_folder in get_browser_cache_paths().items():
+        browser_sizes_before += get_folder_size(cache_folder)
+
+    total_size_before = (
+        temp_size_before
+        + windows_cache_size_before
+        + browser_sizes_before
+    )
+
     clean_temp()
     clean_windows_cache()
     clean_browser_cache()
+
+    temp_size_after = get_folder_size(os.environ.get("TEMP"))
+
+    windows_cache_size_after = get_folder_size(
+        get_windows_cache_folder()
+    )
+
+    browser_sizes_after = 0
+
+    for browser, cache_folder in get_browser_cache_paths().items():
+        browser_sizes_after += get_folder_size(cache_folder)
+
+    total_size_after = (
+        temp_size_after
+        + windows_cache_size_after
+        + browser_sizes_after
+    )
+
+    freed_space = total_size_before - total_size_after
+
+    if freed_space < 0:
+        freed_space = 0
+
     update_temp_size()
 
     status_label.config(
-        text="All cleanup locations processed."
+        text=f"Cleanup completed!\n"
+             f"Space freed: {format_size(freed_space)}"
     )
 
 
