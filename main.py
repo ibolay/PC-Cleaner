@@ -362,16 +362,61 @@ subtitle_label.pack(
 # CONTENT
 # =========================
 
-content = tk.Frame(
+content_container = tk.Frame(
     root,
     bg="#f4f6f8"
 )
 
-content.pack(
+content_container.pack(
     fill="both",
     expand=True,
     padx=25,
     pady=20
+)
+
+canvas = tk.Canvas(
+    content_container,
+    bg="#f4f6f8",
+    highlightthickness=0
+)
+
+scrollbar = tk.Scrollbar(
+    content_container,
+    orient="vertical",
+    command=canvas.yview
+)
+
+content = tk.Frame(
+    canvas,
+    bg="#f4f6f8"
+)
+
+content.bind(
+    "<Configure>",
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
+    )
+)
+
+canvas.create_window(
+    (0, 0),
+    window=content,
+    anchor="nw"
+)
+
+canvas.configure(
+    yscrollcommand=scrollbar.set
+)
+
+canvas.pack(
+    side="left",
+    fill="both",
+    expand=True
+)
+
+scrollbar.pack(
+    side="right",
+    fill="y"
 )
 
 
