@@ -408,6 +408,12 @@ canvas.configure(
     yscrollcommand=scrollbar.set
 )
 
+def on_mouse_wheel(event):
+    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+
+canvas.bind_all("<MouseWheel>", on_mouse_wheel)
+
 canvas.pack(
     side="left",
     fill="both",
