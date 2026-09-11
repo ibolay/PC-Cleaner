@@ -806,6 +806,13 @@ status_label.pack(
 # REFRESH BUTTON
 # =========================
 
+def refresh_all():
+    update_temp_size()
+
+    status_label.config(
+        text="All cleanup locations refreshed."
+    )
+
 refresh_button = tk.Button(
     content,
     text="Refresh",
@@ -818,7 +825,7 @@ refresh_button = tk.Button(
     padx=20,
     pady=8,
     cursor="hand2",
-    command=update_temp_size
+    command=refresh_all
 )
 
 refresh_button.pack(
