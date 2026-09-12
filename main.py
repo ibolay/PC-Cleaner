@@ -695,6 +695,14 @@ windows_cache_result.pack(
 # BROWSER CACHE CARD
 # =========================
 
+def open_browser_cache_folder():
+    browser_paths = get_browser_cache_paths()
+
+    for browser, cache_folder in browser_paths.items():
+        if os.path.exists(cache_folder):
+            os.startfile(cache_folder)
+            return
+
 browser_cache_card = tk.Frame(
     content,
     bg="#ffffff"
@@ -748,6 +756,27 @@ browser_cache_button = tk.Button(
     pady=10,
     cursor="hand2",
     command=clean_browser_cache
+)
+
+browser_cache_open_button = tk.Button(
+    browser_cache_card,
+    text="Open Folder",
+    font=("Segoe UI", 11),
+    bg="#e5e7eb",
+    fg="#374151",
+    activebackground="#d1d5db",
+    activeforeground="#111827",
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
+    command=open_browser_cache_folder
+)
+
+browser_cache_open_button.pack(
+    anchor="w",
+    padx=25,
+    pady=(0, 10)
 )
 
 browser_cache_button.pack(
