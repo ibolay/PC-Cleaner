@@ -199,11 +199,14 @@ def clean_browser_cache():
 
     deleted_files = 0
     deleted_folders = 0
+    cleaned_browsers = []
 
     for browser, cache_folder in browser_paths.items():
 
         if not os.path.exists(cache_folder):
             continue
+
+        cleaned_browsers.append(browser)
 
         for item in os.listdir(cache_folder):
             path = os.path.join(cache_folder, item)
@@ -220,9 +223,15 @@ def clean_browser_cache():
             except (PermissionError, OSError):
                 continue
 
+    if cleaned_browsers:
+        browsers_text = ", ".join(cleaned_browsers)
+    else:
+        browsers_text = "No browser cache found"
+
     browser_cache_result.config(
         text=(
             f"Cleanup completed!\n"
+            f"Browsers: {browsers_text}\n"
             f"Files removed: {deleted_files}   "
             f"Folders removed: {deleted_folders}"
         )
