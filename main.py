@@ -193,6 +193,23 @@ def get_browser_cache_paths():
         )
     }
 
+def get_browser_cache_size():
+    total_size = 0
+
+    for browser, cache_folder in get_browser_cache_paths().items():
+        if not os.path.exists(cache_folder):
+            continue
+
+        for root, dirs, files in os.walk(cache_folder):
+            for file in files:
+                path = os.path.join(root, file)
+
+                try:
+                    total_size += os.path.getsize(path)
+                except (PermissionError, OSError):
+                    continue
+
+    return total_size
 
 def clean_browser_cache():
     browser_paths = get_browser_cache_paths()
@@ -746,6 +763,20 @@ browser_cache_description = tk.Label(
     fg="#6b7280"
 )
 
+browser_cache_size_label = tk.Label(
+    browser_cache_card,
+    text="Cache size: Calculating...",
+    font=("Segoe UI", 10, "bold"),
+    bg="#ffffff",
+    fg="#2563eb"
+)
+
+browser_cache_size_label.pack(
+    anchor="w",
+    padx=25,
+    pady=(10, 0)
+)
+
 browser_cache_description.pack(
     anchor="w",
     padx=25
@@ -846,6 +877,12 @@ status_label.pack(
 
 def refresh_all():
     update_temp_size()
+
+    browser_size = get_browser_cache_size()
+
+    browser_cache_size_label.config(
+        text=f"Cache size: {format_size(browser_size)}"
+    )
 
     status_label.config(
         text="All cleanup locations refreshed."
