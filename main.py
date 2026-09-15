@@ -211,6 +211,9 @@ def get_browser_cache_size():
 
     return total_size
 
+def get_windows_cache_size():
+    return get_folder_size(get_windows_cache_folder())
+
 def clean_browser_cache():
     browser_paths = get_browser_cache_paths()
 
@@ -642,6 +645,20 @@ windows_cache_description = tk.Label(
     fg="#6b7280"
 )
 
+windows_cache_size_label = tk.Label(
+    windows_cache_card,
+    text="Cache size: Calculating...",
+    font=("Segoe UI", 10, "bold"),
+    bg="#ffffff",
+    fg="#2563eb"
+)
+
+windows_cache_size_label.pack(
+    anchor="w",
+    padx=25,
+    pady=(10, 0)
+)
+
 windows_cache_description.pack(
     anchor="w",
     padx=25
@@ -882,6 +899,10 @@ def refresh_all():
 
     browser_cache_size_label.config(
         text=f"Cache size: {format_size(browser_size)}"
+    )
+
+    windows_cache_size_label.config(
+        text=f"Cache size: {format_size(get_windows_cache_size())}"
     )
 
     status_label.config(
