@@ -21,8 +21,6 @@ def clean_temp():
         result_label.config(text="Temporary folder was not found.")
         return
 
-    size_before = get_temp_size()
-
     deleted_files = 0
     deleted_folders = 0
 
@@ -41,16 +39,9 @@ def clean_temp():
         except (PermissionError, OSError):
             continue
 
-    size_after = get_temp_size()
-    freed_space = size_before - size_after
-
-    if freed_space < 0:
-        freed_space = 0
-
     result_label.config(
         text=(
             f"Cleanup completed!\n"
-            f"Space freed: {format_size(freed_space)}\n"
             f"Files removed: {deleted_files}   "
             f"Folders removed: {deleted_folders}"
         )
