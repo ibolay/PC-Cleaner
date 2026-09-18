@@ -338,8 +338,15 @@ def clean_all():
 root = tk.Tk()
 
 root.title("PC Cleaner")
-root.geometry("900x650")
-root.minsize(800, 550)
+
+root.geometry("1000x750")
+root.minsize(680, 600)
+
+try:
+    root.state("zoomed")
+except tk.TclError:
+    pass
+
 root.configure(bg="#f4f6f8")
 
 
@@ -427,11 +434,21 @@ content.bind(
     )
 )
 
-canvas.create_window(
+content_window = canvas.create_window(
     (0, 0),
     window=content,
     anchor="nw"
 )
+
+
+def resize_content(event):
+    canvas.itemconfigure(
+        content_window,
+        width=event.width
+    )
+
+
+canvas.bind("<Configure>", resize_content)
 
 canvas.configure(
     yscrollcommand=scrollbar.set
